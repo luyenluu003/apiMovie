@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="trace">
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+	    <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n" />
+        </Console>
+
+        <RollingFile name="music_service_INFO" filename="logs/music_service.log"   filepattern="logs/music_service.log.%d{YYYY-MM-dd}.gz">
+	        <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} %-5p %c{2}.%M %msg%n" />
+                <Policies>
+	                <TimeBasedTriggeringPolicy />
+                </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs">
+                    <IfFileName glob="music_service.*.log.gz" />
+                    <IfLastModified age="P7D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="music_service_ERROR" filename="logs/music_service_ERROR.log"   filepattern="logs/music_service_ERROR.%d{YYYY-MM-dd}.log.gz">
+	        <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss} %-5p %c{1} %msg%n" />
+                <Policies>
+        	        <SizeBasedTriggeringPolicy size="300 MB" />
+                </Policies>
+                <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs">
+                    <IfFileName glob="music_service_ERROR.*.log.gz" />
+                    <IfLastModified age="P7D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="report_log" filename="logs/report_log/report.log"
+                     filepattern="logs/report_log/report.log.%d{YYYY-MM-dd}.log.gz">
+            <PatternLayout pattern="%msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs/report_log">
+                    <IfFileName glob="report.log.*.gz" />
+                    <IfLastModified age="P30D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="play_song" filename="logs/play_song/report.log"
+                     filepattern="logs/play_song/report.log.%d{YYYY-MM-dd}.log.gz">
+            <PatternLayout pattern="%msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs/play_song">
+                    <IfFileName glob="report.log.*.gz" />
+                    <IfLastModified age="P30D" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <logger name="reportAccess" level="info" additivity="false">
+            <appender-ref ref="report_log" />
+        </logger>
+        <logger name="playSong" level="info" additivity="false">
+            <appender-ref ref="play_song" />
+        </logger>
+        <Root level="info">
+            <AppenderRef ref="music_service_INFO" />
+            <AppenderRef ref="music_service_ERROR" />
+            <AppenderRef ref="Console" />
+
+        </Root>
+	 <!-- <logger name="org.springframework" level="DEBUG" />  -->
+    </Loggers>
+</Configuration>
+
