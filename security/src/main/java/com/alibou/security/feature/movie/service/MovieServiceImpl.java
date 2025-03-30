@@ -125,39 +125,37 @@ public class MovieServiceImpl implements MovieService {
 
 
     @Override
+    @Cacheable(value = "movies", key = "'list-movie-detail:'.concat(#userId).concat(#movieCode)")
     public Movie findMovieByMovieCode(String userId, String movieCode) {
-        log.info("Finding movie for userId={} with movieCode={}", userId, movieCode);
+        log.info("Tìm kiếm phim cho userId={} với movieCode={}", userId, movieCode);
 
+        // Lấy thông tin phim từ cơ sở dữ liệu
         Movie movie = movieDao.getMovieByMovieCode(movieCode);
         if (movie == null) {
-            log.info("No movie found with movieCode={}", movieCode);
+            log.info("Không tìm thấy phim với movieCode={}", movieCode);
             return null;
         }
 
         try {
+            // Nếu là phim series, lấy danh sách các tập phim
             if (Boolean.TRUE.equals(movie.getType())) {
-                log.info("Retrieving episodes for series with movieCode={}", movieCode);
+                log.info("Đang lấy danh sách tập cho series với movieCode={}", movieCode);
                 List<Episode> episodes = episodeDao.getAllEpisodesByMovieCode(movieCode);
                 movie.setEpisodes(episodes != null ? episodes : Collections.emptyList());
+                log.info("Số tập tìm thấy: {}", movie.getEpisodes().size());
             } else {
-                log.info("Processing single movie with movieCode={}", movieCode);
+                log.info("Xử lý phim lẻ với movieCode={}", movieCode);
             }
 
-
-
-            log.info("Retrieving actors for movieCode={}", movieCode);
+            // Lấy danh sách diễn viên cho phim
+            log.info("Đang lấy danh sách diễn viên cho movieCode={}", movieCode);
             List<Actor> actors = actorDao.getAllActorByMovieCode(movieCode);
             movie.setActors(actors != null ? actors : Collections.emptyList());
-
-//            log.info("Retrieving category for series with categoryId={}", movie.getCategoryId());
-//            List<Category> categories = categoryDao.getAllCategoryByCategoryId(movie.getCategoryId());
-//            Map<String, Object> movieData = new HashMap<>();
-//            movieData.put("movie", movie);
-//            movieData.put("categories", categories != null ? categories : Collections.emptyList());
+            log.info("Số diễn viên tìm thấy: {}", movie.getActors().size());
 
             return movie;
         } catch (Exception e) {
-            log.error("Error retrieving movie details for movieCode={}: {}", movieCode, e.getMessage());
+            log.error("Lỗi khi lấy thông tin chi tiết cho movieCode={}: {}", movieCode, e.getMessage());
             return null;
         }
     }
