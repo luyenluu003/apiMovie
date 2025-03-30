@@ -107,6 +107,7 @@ public class JWTFilter extends OncePerRequestFilter {
 //                path.equals("/v1/authen/login/request-otp") ||
 //                path.equals("/v1/authen/login/otp") ||
                 path.startsWith("/v1/") ||
+                path.startsWith("/ws/") ||
                 path.startsWith("/without-bearer/") ||
                 path.startsWith("/genotp/") ||
                 path.startsWith("/actuator/") ||

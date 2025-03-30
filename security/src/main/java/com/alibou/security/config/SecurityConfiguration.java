@@ -64,6 +64,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()//allow CORS option calls
                 .antMatchers("/anonymous/**").permitAll()
                 .antMatchers("/v1/**").permitAll()
+                .antMatchers("/ws/**").permitAll() // Cho phép tất cả yêu cầu đến /ws/**
                 .antMatchers("/internal/**",
                         "/without-bearer/**",
                         "/actuator/**").hasIpAddress("10.225.10.0/24")
