@@ -172,4 +172,24 @@ public class AuthenController {
                 .data(data)
                 .build());
     }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(
+            @RequestHeader("Accept-language") @NotBlank String lang,
+            @RequestBody Map<String, String> request) {
+        log.info("Request Google Login");
+
+        String credential = request.get("credential");
+        if (credential == null || credential.isEmpty()) {
+            throw new InvalidParameterException("Credential is required");
+        }
+
+        User user = authenService.googleLogin(credential);
+        SuccessResDto data = SuccessResDto.builder()
+                .message("Google Login Success")
+                .data(user)
+                .build();
+
+        return ResponseEntity.ok().body(data);
+    }
 }

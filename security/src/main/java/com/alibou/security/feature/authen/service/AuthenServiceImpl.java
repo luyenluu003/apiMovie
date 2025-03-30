@@ -8,16 +8,24 @@ import com.alibou.security.feature.authen.model.MessageSendPassword;
 import com.alibou.security.feature.common.service.MediaService;
 import com.alibou.security.feature.user.model.User;
 import com.alibou.security.utils.AuthenticationUtil;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
 
 @Service
 @Log4j2
@@ -25,11 +33,22 @@ public class AuthenServiceImpl implements AuthenService {
     public static final int TIME_EXPIRED_TOKEN_RESET_PASSWORD = 60 * 60;
     private static final int TIME_EXPIRED_OTP = 30;
 
+    @Value("${google.clientId}")
+    private String googleClientId;
+
     @Autowired
     private AuthenDao authenDao;
 
     @Autowired
     private MediaService mediaService;
+
+    @Value("${superapp.jwt.secret.key}")
+    private String jwtSecret;
+
+    @Value("${superapp.jwt.expire.duration1}")
+    private long jwtExpiration;
+
+
 
 
     @Override
@@ -250,4 +269,69 @@ public class AuthenServiceImpl implements AuthenService {
         BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
         return bCrypt.encode(oldString);
     }
+
+    @Override
+    public User googleLogin(String credential) {
+        try {
+            // Decode token bằng jjwt (không verify chữ ký)
+            JwtParser parser = Jwts.parser();
+            String[] tokenParts = credential.split("\\.");
+            if (tokenParts.length != 3) {
+                throw new InvalidParameterException("Invalid Google token format");
+            }
+
+            // Decode payload (phần giữa của JWT)
+            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(tokenParts[1]));
+            com.google.gson.JsonObject payload = new com.google.gson.JsonParser().parse(payloadJson).getAsJsonObject();
+
+            // Lấy thông tin từ payload
+            String email = payload.get("email").getAsString();
+            String name = payload.has("name") ? payload.get("name").getAsString() : "Unknown";
+            String picture = payload.has("picture") ? payload.get("picture").getAsString() : null;
+
+            // Kiểm tra audience để đảm bảo token dành cho ứng dụng của bạn
+            String aud = payload.get("aud").getAsString();
+            if (!googleClientId.equals(aud)) {
+                throw new InvalidParameterException("Invalid audience in Google token");
+            }
+
+            // Tìm hoặc tạo user
+            User user = authenDao.checkUserByLoginId(email);
+            if (user == null) {
+                user = new User();
+                user.setUserId(String.valueOf(System.currentTimeMillis()));
+                user.setLoginId(email);
+                user.setEmail(email);
+                user.setUserName(name);
+                user.setAvatar(picture);
+                user.setPhoneNumber(null);
+                user.setPassword(encryptBcrypt(String.valueOf(System.currentTimeMillis())));
+                user.setBaseOn("google");
+                user.setActive(1);
+                authenDao.saveUserInfo(user);
+            }
+
+            // Cập nhật token và trả về User
+            long timestamp = new Date().getTime();
+            long timeExpired = timestamp + AuthenticationUtil.TOKEN_TIME_EXPIRED_SCALE;
+            String token = AuthenticationUtil.generateToken(user.getUserId(), timeExpired, AuthenticationUtil.SECRET_CODE);
+            if (token != null) {
+                user.setToken(token);
+                user.setTokenExpired(new Date(timeExpired));
+                user.setActive(1);
+                int rsCount = authenDao.updateToken(user);
+                if (rsCount <= 0) {
+                    throw new NonHandleException("Update's not successful.");
+                }
+            } else {
+                throw new NonHandleException("Token can not be null.");
+            }
+            return user; // Trả về User thay vì UserDto
+        } catch (Exception e) {
+            log.error("Google login failed: " + e.getMessage(), e);
+            throw new InvalidParameterException("Google login failed: " + e.getMessage());
+        }
+    }
+
+
 }
