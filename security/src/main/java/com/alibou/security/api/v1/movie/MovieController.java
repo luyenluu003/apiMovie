@@ -31,7 +31,7 @@ public class MovieController {
             HttpServletRequest request
     ) {
         Long start = System.currentTimeMillis();
-        log.info("[MOVIE]:" + "userId=" + userId + " |type=" + type);
+        log.info("[FindAllMovie]:" + "userId=" + userId + " |type=" + type);
 
         List<MovieDto> movies = movieService.findAllMovies(page, pageSize, userId, type);
 

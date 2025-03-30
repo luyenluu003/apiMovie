@@ -1,5 +1,6 @@
 package com.alibou.security.feature.movie.service;
 
+import com.alibou.security.api.v1.dto.episode.EpisodeDto;
 import com.alibou.security.api.v1.dto.movie.MovieDto;
 import com.alibou.security.feature.actor.dao.ActorDao;
 import com.alibou.security.feature.actor.model.Actor;
@@ -39,7 +40,7 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     @Cacheable(value = "movies", key = "'list-movies:'.concat(#userId).concat(#type).concat(#page).concat(#pageSize)")
-    public List<MovieDto> findAllMovies(Integer page, Integer pageSize, String userId, Boolean type)  {
+    public List<MovieDto> findAllMovies(Integer page, Integer pageSize, String userId, Boolean type) {
         log.info("FindAllMovie | HIT | userId={} | type={} | page={} | pageSize={}", userId, type, page, pageSize);
         String cacheKey = "list-movies:".concat(userId).concat(type.toString()).concat(page.toString()).concat(pageSize.toString());
         log.info("Cache Key: {}", cacheKey);
@@ -50,30 +51,40 @@ public class MovieServiceImpl implements MovieService {
             return Collections.emptyList();
         }
 
-        return movies.stream().map(movie ->
-                MovieDto.builder()
-                        .categoryId(movie.getCategoryId())
-                        .censorship(movie.getCensorship())
-                        .description(movie.getDescription())
-                        .duration(movie.getDuration())
-                        .imageUrl(movie.getImageUrl())
-                        .language(movie.getLanguage())
-                        .movieCode(movie.getMovieCode())
-                        .movieGenre(movie.getMovieGenre())
-                        .movieName(movie.getMovieName())
-                        .releaseDate(movie.getReleaseDate())
-                        .status(movie.getStatus())
-                        .type(movie.getType())
-                        .userphone(movie.getUserphone())
-                        .videoUrl(movie.getVideoUrl())
-                        .isHot(movie.getIsHot())
-                        .build()
-        ).collect(Collectors.toList());
+        return movies.stream().map(movie -> {
+            MovieDto.MovieDtoBuilder builder = MovieDto.builder()
+                    .categoryId(movie.getCategoryId())
+                    .censorship(movie.getCensorship())
+                    .description(movie.getDescription())
+                    .duration(movie.getDuration())
+                    .imageUrl(movie.getImageUrl())
+                    .language(movie.getLanguage())
+                    .movieCode(movie.getMovieCode())
+                    .movieGenre(movie.getMovieGenre())
+                    .movieName(movie.getMovieName())
+                    .releaseDate(movie.getReleaseDate())
+                    .status(movie.getStatus())
+                    .type(movie.getType())
+                    .userphone(movie.getUserphone())
+                    .videoUrl(movie.getVideoUrl())
+                    .isHot(movie.getIsHot());
+
+            if (Boolean.TRUE.equals(movie.getType())) {
+                log.info("Fetching episodes for movieCode: {}", movie.getMovieCode());
+                List<Episode> episodes = episodeDao.getAllEpisodesByMovieCode(movie.getMovieCode());
+                log.info("Episodes found: {}", episodes.size());
+                builder.episodes(episodes);
+            }
+
+            return builder.build();
+        }).collect(Collectors.toList());
     }
+
+
 
     @Override
     @Cacheable(value = "movies", key = "'list-movies-hot:'.concat(#userId).concat(#isHot).concat(#page).concat(#pageSize)")
-    public List<MovieDto> findAllMoviesIsHot(Integer page, Integer pageSize, String userId, Integer isHot)  {
+    public List<MovieDto> findAllMoviesIsHot(Integer page, Integer pageSize, String userId, Integer isHot) {
         log.info("FindAllMovieIsHot | HIT | userId={} | isHot={} | page={} | pageSize={}", userId, isHot, page, pageSize);
 
         List<Movie> movies = movieDao.getMovieHots(isHot, page, pageSize);
@@ -82,26 +93,35 @@ public class MovieServiceImpl implements MovieService {
             return Collections.emptyList();
         }
 
-        return movies.stream().map(movie ->
-                MovieDto.builder()
-                        .categoryId(movie.getCategoryId())
-                        .censorship(movie.getCensorship())
-                        .description(movie.getDescription())
-                        .duration(movie.getDuration())
-                        .imageUrl(movie.getImageUrl())
-                        .language(movie.getLanguage())
-                        .movieCode(movie.getMovieCode())
-                        .movieGenre(movie.getMovieGenre())
-                        .movieName(movie.getMovieName())
-                        .releaseDate(movie.getReleaseDate())
-                        .status(movie.getStatus())
-                        .type(movie.getType())
-                        .userphone(movie.getUserphone())
-                        .videoUrl(movie.getVideoUrl())
-                        .isHot(movie.getIsHot())
-                        .build()
-        ).collect(Collectors.toList());
+        return movies.stream().map(movie -> {
+            MovieDto.MovieDtoBuilder builder = MovieDto.builder()
+                    .categoryId(movie.getCategoryId())
+                    .censorship(movie.getCensorship())
+                    .description(movie.getDescription())
+                    .duration(movie.getDuration())
+                    .imageUrl(movie.getImageUrl())
+                    .language(movie.getLanguage())
+                    .movieCode(movie.getMovieCode())
+                    .movieGenre(movie.getMovieGenre())
+                    .movieName(movie.getMovieName())
+                    .releaseDate(movie.getReleaseDate())
+                    .status(movie.getStatus())
+                    .type(movie.getType())
+                    .userphone(movie.getUserphone())
+                    .videoUrl(movie.getVideoUrl())
+                    .isHot(movie.getIsHot());
+
+            if (Boolean.TRUE.equals(movie.getType())) {
+                log.info("Fetching episodes for movieCode: {}", movie.getMovieCode());
+                List<Episode> episodes = episodeDao.getAllEpisodesByMovieCode(movie.getMovieCode());
+                log.info("Episodes found: {}", episodes.size());
+                builder.episodes(episodes);
+            }
+
+            return builder.build();
+        }).collect(Collectors.toList());
     }
+
 
 
     @Override
