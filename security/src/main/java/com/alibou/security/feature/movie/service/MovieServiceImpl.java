@@ -129,7 +129,6 @@ public class MovieServiceImpl implements MovieService {
     public Movie findMovieByMovieCode(String userId, String movieCode) {
         log.info("Tìm kiếm phim cho userId={} với movieCode={}", userId, movieCode);
 
-        // Lấy thông tin phim từ cơ sở dữ liệu
         Movie movie = movieDao.getMovieByMovieCode(movieCode);
         if (movie == null) {
             log.info("Không tìm thấy phim với movieCode={}", movieCode);
@@ -137,7 +136,7 @@ public class MovieServiceImpl implements MovieService {
         }
 
         try {
-            // Nếu là phim series, lấy danh sách các tập phim
+
             if (Boolean.TRUE.equals(movie.getType())) {
                 log.info("Đang lấy danh sách tập cho series với movieCode={}", movieCode);
                 List<Episode> episodes = episodeDao.getAllEpisodesByMovieCode(movieCode);
@@ -147,7 +146,6 @@ public class MovieServiceImpl implements MovieService {
                 log.info("Xử lý phim lẻ với movieCode={}", movieCode);
             }
 
-            // Lấy danh sách diễn viên cho phim
             log.info("Đang lấy danh sách diễn viên cho movieCode={}", movieCode);
             List<Actor> actors = actorDao.getAllActorByMovieCode(movieCode);
             movie.setActors(actors != null ? actors : Collections.emptyList());
