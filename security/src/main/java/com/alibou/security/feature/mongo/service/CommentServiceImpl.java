@@ -195,4 +195,15 @@ public class CommentServiceImpl implements CommentService {
             throw e;
         }
     }
+
+    @Override
+    public  Integer totalCommentCount(String movieCode){
+        List<Comment> comments = commentDao.findByMovieCode(movieCode, Sort.by(Sort.Direction.DESC, "commentAt"));
+        Integer total = comments.size();
+        for(Comment comment : comments){
+            total += comment.getReplies().size();
+        }
+
+        return total;
+    }
 }

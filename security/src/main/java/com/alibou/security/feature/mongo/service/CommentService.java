@@ -10,4 +10,5 @@ public interface CommentService {
     List<Comment> getCommentsByMovieCode(String movieCode);
     void deleteComment(String commentId, String userId);
     void deleteReply(String commentId, String replyId, String userId);
+    Integer totalCommentCount(String movieCode);
 }

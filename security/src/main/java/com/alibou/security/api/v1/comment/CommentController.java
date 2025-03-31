@@ -107,4 +107,24 @@ public class CommentController {
         commentService.deleteReply(commentId, replyId, userId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/total-count")
+    public ResponseEntity<Integer> getTotalCommentCount(
+            @RequestHeader("Accept-language") String lang,
+            @RequestParam("movieCode") String movieCode,
+            HttpServletRequest request) {
+        log.info("Received getTotalCommentCount request for movieCode: {}, lang: {}", movieCode, lang);
+
+        try {
+            log.debug("Calling CommentService.getTotalCommentCount with movieCode: {}", movieCode);
+            Integer totalCount = commentService.totalCommentCount(movieCode);
+            log.info("Total comment count for movieCode: {} is {}", movieCode, totalCount);
+            return ResponseEntity.ok(totalCount);
+        } catch (RuntimeException e) {
+            log.error("Failed to get total comment count for movieCode: {}. Error: {}",
+                    movieCode, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }
