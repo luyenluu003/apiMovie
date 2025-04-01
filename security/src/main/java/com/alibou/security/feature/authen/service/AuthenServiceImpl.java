@@ -230,6 +230,9 @@ public class AuthenServiceImpl implements AuthenService {
                         .userName(user.getUserName())
                         .avatar(avatar)
                         .token(token)
+                        .vipLevel(user.getVipLevel())
+                        .vipEndDate(user.getVipEndDate())
+                        .vipStartDate(user.getVipStartDate())
                         .tokenExpired(new Date(timeExpired))
                         .build();
             }else{

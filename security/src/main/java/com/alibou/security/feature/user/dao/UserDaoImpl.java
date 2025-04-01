@@ -44,12 +44,17 @@ public class UserDaoImpl implements UserDao{
             SqlParameterSource params = new MapSqlParameterSource()
                     .addValue("userId", userId);
 
+            log.info("TIM THANH CONG USER =>", userId);
+
             return jdbcTemplate.queryForObject(sql, params, (rs, rowNum) ->
                     User.builder()
                             .userId(rs.getString("user_id")).userName(rs.getString("username"))
                             .avatar(rs.getString("avatar"))
                             .email(rs.getString("email"))
                             .phoneNumber(rs.getString("phone_number"))
+                            .vipEndDate(rs.getDate("vip_end_date"))
+                            .vipStartDate(rs.getDate("vip_start_date"))
+                            .vipLevel(rs.getString("vip_level"))
                             .build()
             );
 
@@ -60,5 +65,23 @@ public class UserDaoImpl implements UserDao{
         }
         return null;
     }
+
+    @Override
+    public Integer updateUserVip(User user) {
+        String sql = "UPDATE users SET  vip_start_date = :vipStartDate, vip_end_date = :vipEndDate, vip_level =:vipLevel WHERE user_id = :userId";
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", user.getUserId())
+                .addValue("vipStartDate", user.getVipStartDate())
+                .addValue("vipEndDate", user.getVipEndDate())
+                .addValue("vipLevel", user.getVipLevel());
+        try {
+            return jdbcTemplate.update(sql, params);
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật thông tin người dùng vip với userId: {}", user.getUserId(), e);
+            return 0;
+        }
+    }
+
 
 }

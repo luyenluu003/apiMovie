@@ -37,4 +37,8 @@ public class User  implements Serializable {
 
     private String otp;
     private Date otpExpired;
+    private Date vipStartDate;
+    private Date vipEndDate;
+    private String vipLevel;
+
 }

@@ -22,7 +22,7 @@ public class AuthenDaoImpl implements AuthenDao {
     @Override
     public User checkUserByLoginId(String loginId) {
         String sql = "SELECT user_id, login_id, base_on, phone_number, email, password, otp, otp_expired, " +
-                    " username, last_avatar, active " +
+                    " username, last_avatar, active, vip_level, vip_start_date, vip_end_date " +
                     "FROM users " +
                     "WHERE login_id = :loginId";
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("loginId", loginId);
@@ -41,6 +41,9 @@ public class AuthenDaoImpl implements AuthenDao {
                                 .userName(rs.getString("username"))
                                 .lastAvatar(rs.getLong("last_avatar"))
                                 .active(rs.getInt("active"))
+                                .vipLevel(rs.getString("vip_level"))
+                                .vipStartDate(rs.getDate("vip_start_date"))
+                                .vipEndDate(rs.getDate("vip_end_date"))
                                 .build();
                     }
                     return null;
@@ -78,7 +81,7 @@ public class AuthenDaoImpl implements AuthenDao {
     @Override
     public User getUserByUserId(String userId) {
         try{
-            String sql = "SELECT user_id, base_on, token, email, phone_number, password, username, last_avatar, active, " +
+            String sql = "SELECT user_id, base_on, token, email, phone_number, password, username, last_avatar, active, vip_level, vip_Start_date, vip_end_date, " +
                         "FROM users " +
                         "WHERE user_id = :userId";
             MapSqlParameterSource params = new MapSqlParameterSource().addValue("userId", userId);
@@ -95,6 +98,9 @@ public class AuthenDaoImpl implements AuthenDao {
                                     .lastAvatar(rs.getLong("last_avatar"))
                                     .password(rs.getString("password"))
                                     .active(rs.getInt("active"))
+                                    .vipLevel(rs.getString("vip_level"))
+                                    .vipEndDate(rs.getDate("vip_end_date"))
+                                    .vipStartDate(rs.getDate("vip_start_date"))
                                     .build();
                         }
                         return null;

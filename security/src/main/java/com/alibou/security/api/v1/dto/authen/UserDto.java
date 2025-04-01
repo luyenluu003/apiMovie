@@ -43,6 +43,9 @@ public class UserDto implements Serializable {
     private String vRegid;
 
     private String otp;
+    private String vipLevel;
+    private Date vipEndDate;
+    private Date vipStartDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateUtil.ISO_DATE_TIME,timezone = DateUtil.TIMEZONE_VN)
     private Date otpExpired;

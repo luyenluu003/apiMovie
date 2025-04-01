@@ -8,4 +8,8 @@ public interface UserDao {
     List<User> findAllUser();
 
     User userFindByuserId(String userId);
+
+    Integer updateUserVip(User user);
+
+
 }
