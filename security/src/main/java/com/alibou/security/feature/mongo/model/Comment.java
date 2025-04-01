@@ -10,9 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Data
 @Builder
@@ -48,5 +46,7 @@ public class Comment {
 
     @Field(value = "commentReplies")
     private List<CommentReply> replies = new ArrayList<>();
+    private List<String> likes = new ArrayList<>(); // Danh sách userId đã thích (cho Like đơn giản)
+    private Map<String, List<String>> reactions = new HashMap<>();
 
 }

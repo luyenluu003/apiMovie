@@ -11,4 +11,13 @@ public interface CommentService {
     void deleteComment(String commentId, String userId);
     void deleteReply(String commentId, String replyId, String userId);
     Integer totalCommentCount(String movieCode);
+
+    Comment likeComment(String commentId, String userId);
+    Comment unlikeComment(String commentId, String userId);
+    Comment addReactionToComment(String commentId, String userId, String reactionType);
+    Comment removeReactionFromComment(String commentId, String userId, String reactionType);
+    Comment likeReply(String commentId, String replyId, String userId);
+    Comment unlikeReply(String commentId, String replyId, String userId);
+    Comment addReactionToReply(String commentId, String replyId, String userId, String reactionType);
+    Comment removeReactionFromReply(String commentId, String replyId, String userId, String reactionType);
 }

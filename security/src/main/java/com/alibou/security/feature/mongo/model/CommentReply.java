@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.util.*;
 
 @Data
 @Builder
@@ -27,4 +27,7 @@ public class CommentReply {
 
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private Date replyAt;
+
+    private List<String> likes = new ArrayList<>(); // Likes cho reply
+    private Map<String, List<String>> reactions = new HashMap<>();
 }

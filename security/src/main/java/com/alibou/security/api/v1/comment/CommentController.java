@@ -127,4 +127,96 @@ public class CommentController {
         }
     }
 
+//    Like
+@PostMapping("/like")
+public ResponseEntity<Comment> likeComment(
+        @RequestParam String commentId,
+        @RequestParam String userId,
+        @RequestHeader("Accept-language") String lang,
+        HttpServletRequest request) {
+    Comment comment = commentService.likeComment(commentId, userId);
+    return ResponseEntity.ok(comment);
+}
+
+    @PostMapping("/unlike")
+    public ResponseEntity<Comment> unlikeComment(
+            @RequestParam String commentId,
+            @RequestParam String userId,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.unlikeComment(commentId, userId);
+        return ResponseEntity.ok(comment);
+    }
+
+    // Reaction comment
+    @PostMapping("/react")
+    public ResponseEntity<Comment> addReactionToComment(
+            @RequestParam String commentId,
+            @RequestParam String userId,
+            @RequestParam String reactionType,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.addReactionToComment(commentId, userId, reactionType);
+        return ResponseEntity.ok(comment);
+    }
+
+    @PostMapping("/unreact")
+    public ResponseEntity<Comment> removeReactionFromComment(
+            @RequestParam String commentId,
+            @RequestParam String userId,
+            @RequestParam String reactionType,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.removeReactionFromComment(commentId, userId, reactionType);
+        return ResponseEntity.ok(comment);
+    }
+
+    // Like reply
+    @PostMapping("/reply/like")
+    public ResponseEntity<Comment> likeReply(
+            @RequestParam String commentId,
+            @RequestParam String replyId,
+            @RequestParam String userId,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.likeReply(commentId, replyId, userId);
+        return ResponseEntity.ok(comment);
+    }
+
+    @PostMapping("/reply/unlike")
+    public ResponseEntity<Comment> unlikeReply(
+            @RequestParam String commentId,
+            @RequestParam String replyId,
+            @RequestParam String userId,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.unlikeReply(commentId, replyId, userId);
+        return ResponseEntity.ok(comment);
+    }
+
+    // Reaction reply
+    @PostMapping("/reply/react")
+    public ResponseEntity<Comment> addReactionToReply(
+            @RequestParam String commentId,
+            @RequestParam String replyId,
+            @RequestParam String userId,
+            @RequestParam String reactionType,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.addReactionToReply(commentId, replyId, userId, reactionType);
+        return ResponseEntity.ok(comment);
+    }
+
+    @PostMapping("/reply/unreact")
+    public ResponseEntity<Comment> removeReactionFromReply(
+            @RequestParam String commentId,
+            @RequestParam String replyId,
+            @RequestParam String userId,
+            @RequestParam String reactionType,
+            @RequestHeader("Accept-language") String lang,
+            HttpServletRequest request) {
+        Comment comment = commentService.removeReactionFromReply(commentId, replyId, userId, reactionType);
+        return ResponseEntity.ok(comment);
+    }
+
 }
