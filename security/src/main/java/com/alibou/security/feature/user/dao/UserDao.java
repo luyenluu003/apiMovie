@@ -11,5 +11,7 @@ public interface UserDao {
 
     Integer updateUserVip(User user);
 
+    Integer updateUser(User user);
+
 
 }

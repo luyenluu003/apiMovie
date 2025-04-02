@@ -1,13 +1,16 @@
 package com.alibou.security.feature.authen.service;
 
 import com.alibou.security.api.v1.dto.authen.UserDto;
+import com.alibou.security.common.UploadFile;
 import com.alibou.security.exception.NonHandleException;
 import com.alibou.security.feature.authen.dao.AuthenDao;
 import com.alibou.security.feature.authen.model.MessageOTP;
 import com.alibou.security.feature.authen.model.MessageSendPassword;
 import com.alibou.security.feature.common.service.MediaService;
+import com.alibou.security.feature.user.dao.UserDao;
 import com.alibou.security.feature.user.model.User;
 import com.alibou.security.utils.AuthenticationUtil;
+import com.alibou.security.utils.ReengUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -17,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +52,11 @@ public class AuthenServiceImpl implements AuthenService {
     @Value("${superapp.jwt.expire.duration1}")
     private long jwtExpiration;
 
+    @Autowired
+    private UserDao userDao;
 
+    @Autowired
+    private UploadFile uploadFile;
 
 
     @Override
@@ -58,12 +66,12 @@ public class AuthenServiceImpl implements AuthenService {
         String encryptOtp = encryptBcrypt(otp);
         Date otpExpiredAt = DateUtils.addSeconds(new Date(), TIME_EXPIRED_OTP);
 
-        if(user == null){
+        if (user == null) {
             throw new InvalidParameterException("Số điện thoại chưa được đăng ký");
-        }else{
+        } else {
             user.setOtp(encryptOtp);
             user.setOtpExpired(otpExpiredAt);
-            authenDao.updateOtp(user.getUserId(),user.getOtp(),user.getOtpExpired());
+            authenDao.updateOtp(user.getUserId(), user.getOtp(), user.getOtpExpired());
         }
 
         User userDb = authenDao.checkUserByPhone(phoneNumber);
@@ -83,17 +91,17 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     public UserDto loginByPhone(String phoneNumber, String otp) {
         User user = authenDao.checkUserByPhone(phoneNumber);
-        if(user == null){
+        if (user == null) {
             throw new InvalidParameterException("Số điện thoại chưa được đăng ký");
         }
 
         long timestamp = new Date().getTime();
         long timeExpired = timestamp + AuthenticationUtil.TOKEN_TIME_EXPIRED_SCALE;
 
-        if(isValidOtp(otp, timestamp ,user)){
-            authenDao.updateTimeOtp(user.getPhoneNumber(),new Date(timestamp));
+        if (isValidOtp(otp, timestamp, user)) {
+            authenDao.updateTimeOtp(user.getPhoneNumber(), new Date(timestamp));
             return sendTokenLoginSuccess(user, timeExpired);
-        }else{
+        } else {
             throw new InvalidParameterException("Invalid OTP");
         }
     }
@@ -101,14 +109,14 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     public UserDto loginByEmail(String email, String password) {
         User user = authenDao.checkUserByLoginId(email);
-        if(user == null){
+        if (user == null) {
             throw new InvalidParameterException("Account doesn't exist");
         }
 
         BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
 
-        Boolean check = bCrypt.matches(password,user.getPassword());
-        if(!check){
+        Boolean check = bCrypt.matches(password, user.getPassword());
+        if (!check) {
             throw new InvalidParameterException("Invalid password");
         }
 
@@ -118,15 +126,15 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public Boolean registrationUser(User userInfo){
+    public Boolean registrationUser(User userInfo) {
         log.info("CHECK");
         User userByEmail = authenDao.checkUserByLoginId(userInfo.getEmail());
-        if(userByEmail != null){
+        if (userByEmail != null) {
             throw new InvalidParameterException("Email is already used for another account!");
         }
 
         User userByPhone = authenDao.checkUserByPhone(userInfo.getPhoneNumber());
-        if(userByPhone != null){
+        if (userByPhone != null) {
             throw new InvalidParameterException("Phone number is already used for another account!");
         }
         userInfo.setUserId(String.valueOf(System.currentTimeMillis()));
@@ -141,7 +149,7 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     public Boolean sendTokenResetPassword(String email, String lang) {
         User userByEmail = authenDao.checkUserByLoginId(email);
-        if(userByEmail == null){
+        if (userByEmail == null) {
             throw new InvalidParameterException("Email not exist");
         }
 
@@ -150,7 +158,7 @@ public class AuthenServiceImpl implements AuthenService {
         String linkResetPassword = email + tokenResetPassword;
         Integer updateToken = authenDao.updateTokenForgotPassword(email, encryptBcrypt(linkResetPassword), expiredForgotPassword);
 
-        if(updateToken == 1){
+        if (updateToken == 1) {
             MessageSendPassword message = MessageSendPassword.builder()
                     .token(tokenResetPassword)
                     .address(email)
@@ -163,16 +171,16 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public Map<String , Object> resetPassword(String email, String password, Integer tokenResetPassword){
-        if(!validateTokenResetPassword(email, tokenResetPassword)){
+    public Map<String, Object> resetPassword(String email, String password, Integer tokenResetPassword) {
+        if (!validateTokenResetPassword(email, tokenResetPassword)) {
             throw new InvalidParameterException("Token not valid");
         }
 
         Integer check = authenDao.updatePassword(email, encryptBcrypt(password));
 
-        if(check == 1){
+        if (check == 1) {
             authenDao.updateTimeTokenResetPass(email, new Date());
-            Map<String , Object> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
             map.put("email", email);
             return map;
         }
@@ -180,49 +188,49 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public Map<String , Object> changePassword(String email, String oldPassword, String newPassword){
+    public Map<String, Object> changePassword(String email, String oldPassword, String newPassword) {
         BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
         Boolean checkOldPass = bCrypt.matches(oldPassword, authenDao.getPassword(email).getPassword());
-        if(checkOldPass){
-            Integer check = authenDao.updatePassword(email,encryptBcrypt(newPassword));
-            if(check == 1){
+        if (checkOldPass) {
+            Integer check = authenDao.updatePassword(email, encryptBcrypt(newPassword));
+            if (check == 1) {
                 authenDao.updateTimeTokenResetPass(email, new Date());
-                Map<String , Object> map = new HashMap<>();
+                Map<String, Object> map = new HashMap<>();
                 map.put("email", email);
                 return map;
             }
-        }else {
+        } else {
             throw new InvalidParameterException("Wrong old password");
         }
         return null;
     }
 
-    public Boolean isValidOtp(String otp, Long timestamp, User user){
-        try{
+    public Boolean isValidOtp(String otp, Long timestamp, User user) {
+        try {
             BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
             String otpDb = user.getOtp();
             long otpExpiredTimeDb = user.getOtpExpired().getTime();
-            if(otpDb != null && otpExpiredTimeDb != 0){
-                long otpResetTime = (otpExpiredTimeDb - timestamp)/1000;
-                if(0 <= otpResetTime && otpResetTime <= TIME_EXPIRED_OTP){
+            if (otpDb != null && otpExpiredTimeDb != 0) {
+                long otpResetTime = (otpExpiredTimeDb - timestamp) / 1000;
+                if (0 <= otpResetTime && otpResetTime <= TIME_EXPIRED_OTP) {
                     return bCrypt.matches(otp, otpDb);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return Boolean.FALSE;
     }
 
-    private UserDto sendTokenLoginSuccess(User user, long timeExpired){
+    private UserDto sendTokenLoginSuccess(User user, long timeExpired) {
         String token = AuthenticationUtil.generateToken(user.getUserId(), timeExpired, AuthenticationUtil.SECRET_CODE);
-        if(token != null){
+        if (token != null) {
             user.setToken(token);
             user.setTokenExpired(new Date(timeExpired));
             user.setActive(1);
             int rsCount = authenDao.updateToken(user);
-            if(rsCount > 0){
-                String avatar = mediaService.getUserAvatar(user.getUserId(), user.getLastAvatar());
+            if (rsCount > 0) {
+                String avatar = user.getAvatar();
                 return UserDto.builder()
                         .userId(user.getUserId())
                         .email(user.getEmail())
@@ -235,10 +243,10 @@ public class AuthenServiceImpl implements AuthenService {
                         .vipStartDate(user.getVipStartDate())
                         .tokenExpired(new Date(timeExpired))
                         .build();
-            }else{
+            } else {
                 throw new NonHandleException("Update's not successful.");
             }
-        }else{
+        } else {
             throw new NonHandleException("Token can not be null.");
         }
     }
@@ -336,5 +344,67 @@ public class AuthenServiceImpl implements AuthenService {
         }
     }
 
+    @Override
+    public User updateUser(String userId, String userName, String phoneNumber, String avatar) {
+        // Tìm user theo userId
+        User user = userDao.userFindByuserId(userId);
+        if (user == null) {
+            log.error("USER NOT FOUND: {}", userId);
+            return null;
+        }
+
+        // Chỉ cập nhật các trường nếu có giá trị mới và không rỗng
+        if (userName != null && !userName.isEmpty()) {
+            user.setUserName(userName);
+        }
+        if (phoneNumber != null) {
+            // Kiểm tra định dạng số điện thoại nếu không rỗng
+            if (!phoneNumber.isEmpty() && !ReengUtils.isPhoneNumber(phoneNumber)) {
+                throw new InvalidParameterException("phoneNumber " + phoneNumber + " wrong format <CountryCode><Phone>");
+            }
+            user.setPhoneNumber(phoneNumber);
+        }
+        if (avatar != null && !avatar.isEmpty()) {
+            String fileNameAvatarUser;
+            // Kiểm tra xem avatar có phải là chuỗi base64 không
+            if (isBase64(avatar)) {
+                // Nếu là base64, xử lý upload file như trước
+                fileNameAvatarUser = uploadFile.createImageFile(avatar, "avatar");
+                log.info("FILENAMEAVATARUSER ==> {}" ,fileNameAvatarUser);
+            } else {
+                // Nếu không phải base64, sử dụng giá trị trực tiếp (có thể là URL hoặc tên file)
+                fileNameAvatarUser = avatar;
+                log.info("AVATAR GOC ==> {}" ,fileNameAvatarUser);
+
+            }
+            log.info("fileNameHeaderAvatar ------> {}", fileNameAvatarUser);
+            user.setAvatar(fileNameAvatarUser);
+        }
+        // Nếu avatar là null hoặc rỗng, không làm gì cả -> giữ nguyên giá trị cũ
+
+        // Cập nhật thời gian cập nhật mới
+        user.setUpdatedAt(new Date());
+
+        // Cập nhật user trong DB
+        Integer updatedRows = userDao.updateUser(user);
+        if (updatedRows > 0) {
+            // Trả về thông tin người dùng đã được cập nhật
+            return userDao.userFindByuserId(userId);
+        } else {
+            log.error("Lỗi khi cập nhật thông tin người dùng với userId: {}", userId);
+            return null;
+        }
+    }
+
+    // Hàm helper để kiểm tra chuỗi base64
+    private boolean isBase64(String str) {
+        try {
+            // Kiểm tra xem chuỗi có hợp lệ với base64 không
+            java.util.Base64.getDecoder().decode(str);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 
 }

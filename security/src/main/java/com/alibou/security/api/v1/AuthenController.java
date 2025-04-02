@@ -1,6 +1,7 @@
 package com.alibou.security.api.v1;
 
 import com.alibou.security.api.v1.dto.SuccessResDto;
+import com.alibou.security.api.v1.dto.authen.UpdateUserDto;
 import com.alibou.security.api.v1.dto.authen.UserDto;
 import com.alibou.security.feature.authen.service.AuthenService;
 import com.alibou.security.feature.user.model.User;
@@ -192,4 +193,38 @@ public class AuthenController {
 
         return ResponseEntity.ok().body(data);
     }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(
+            @RequestHeader("Accept-language") @NotBlank String lang,
+            @RequestBody UpdateUserDto updateUserRequest  // Sử dụng DTO để nhận dữ liệu
+    ) {
+        log.info("Request update user: userId={}, userName={}, phoneNumber={}, avatar={}",
+                updateUserRequest.getUserId(),
+                updateUserRequest.getUserName(),
+                updateUserRequest.getPhoneNumber(),
+                updateUserRequest.getAvatar());
+
+        // Kiểm tra định dạng phoneNumber nếu được gửi
+        if (updateUserRequest.getPhoneNumber() != null && !updateUserRequest.getPhoneNumber().isEmpty()
+                && !ReengUtils.isPhoneNumber(updateUserRequest.getPhoneNumber())) {
+            throw new InvalidParameterException("phoneNumber " + updateUserRequest.getPhoneNumber() + " wrong format <CountryCode><Phone>");
+        }
+
+        // Gọi service để cập nhật thông tin
+        User updatedUser = authenService.updateUser(
+                updateUserRequest.getUserId(),
+                updateUserRequest.getUserName(),
+                updateUserRequest.getPhoneNumber(),
+                updateUserRequest.getAvatar()
+        );
+
+        SuccessResDto data = SuccessResDto.builder()
+                .message("Cập nhật thông tin thành công!")
+                .data(updatedUser) // Trả về thông tin user đã cập nhật
+                .build();
+
+        return ResponseEntity.ok().body(data);
+    }
+
 }

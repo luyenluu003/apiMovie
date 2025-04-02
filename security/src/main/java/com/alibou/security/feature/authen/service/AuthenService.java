@@ -21,4 +21,6 @@ public interface AuthenService {
     Map<String, Object> changePassword(String email, String oldPassword, String newPassword);
 
     User googleLogin(String credential);
+
+    User updateUser (String userId, String userName, String phoneNumber, String avatar);
 }

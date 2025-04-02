@@ -22,7 +22,7 @@ public class AuthenDaoImpl implements AuthenDao {
     @Override
     public User checkUserByLoginId(String loginId) {
         String sql = "SELECT user_id, login_id, base_on, phone_number, email, password, otp, otp_expired, " +
-                    " username, last_avatar, active, vip_level, vip_start_date, vip_end_date " +
+                    " username, last_avatar, active, vip_level, vip_start_date, vip_end_date, avatar " +
                     "FROM users " +
                     "WHERE login_id = :loginId";
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("loginId", loginId);
@@ -44,6 +44,7 @@ public class AuthenDaoImpl implements AuthenDao {
                                 .vipLevel(rs.getString("vip_level"))
                                 .vipStartDate(rs.getDate("vip_start_date"))
                                 .vipEndDate(rs.getDate("vip_end_date"))
+                                .avatar(rs.getString("avatar"))
                                 .build();
                     }
                     return null;

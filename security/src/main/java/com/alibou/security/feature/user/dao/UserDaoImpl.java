@@ -51,6 +51,7 @@ public class UserDaoImpl implements UserDao{
                             .userId(rs.getString("user_id")).userName(rs.getString("username"))
                             .avatar(rs.getString("avatar"))
                             .email(rs.getString("email"))
+                            .token(rs.getString("token"))
                             .phoneNumber(rs.getString("phone_number"))
                             .vipEndDate(rs.getDate("vip_end_date"))
                             .vipStartDate(rs.getDate("vip_start_date"))
@@ -82,6 +83,24 @@ public class UserDaoImpl implements UserDao{
             return 0;
         }
     }
+
+    @Override
+    public Integer updateUser(User user) {
+        String sql = "UPDATE users SET username = :userName, phone_number = :phoneNumber, avatar = :avatar, updated_at = :updatedAt WHERE user_id = :userId";
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", user.getUserId())
+                .addValue("userName", user.getUserName())
+                .addValue("phoneNumber", user.getPhoneNumber())
+                .addValue("avatar", user.getAvatar())
+                .addValue("updatedAt", user.getUpdatedAt());
+        try {
+            return jdbcTemplate.update(sql, params);
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật thông tin người dùng với userId: {}", user.getUserId(), e);
+            return 0;
+        }
+    }
+
 
 
 }
