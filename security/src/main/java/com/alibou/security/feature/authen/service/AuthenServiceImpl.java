@@ -21,14 +21,17 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.security.InvalidParameterException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 @Service
@@ -57,6 +60,22 @@ public class AuthenServiceImpl implements AuthenService {
 
     @Autowired
     private UploadFile uploadFile;
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
+    @PostConstruct
+    public void initMailSender() {
+        JavaMailSenderImpl mailSenderImpl = new JavaMailSenderImpl();
+        mailSenderImpl.setHost("smtp.mailersend.net");
+        mailSenderImpl.setPort(587);
+        mailSenderImpl.setUsername("MS_Mb33WO@test-xkjn41m2dv54z781.mlsender.net");
+        mailSenderImpl.setPassword("mssp.cwuZb0j.0p7kx4x8wp7g9yjr.liOVfiM");
+        Properties props = mailSenderImpl.getJavaMailProperties();
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        this.javaMailSender = mailSenderImpl;
+    }
 
 
     @Override
@@ -146,6 +165,29 @@ public class AuthenServiceImpl implements AuthenService {
         return authenDao.saveUserInfo(userInfo) == 1;
     }
 
+//    @Override
+//    public Boolean sendTokenResetPassword(String email, String lang) {
+//        User userByEmail = authenDao.checkUserByLoginId(email);
+//        if (userByEmail == null) {
+//            throw new InvalidParameterException("Email not exist");
+//        }
+//
+//        String tokenResetPassword = "111111";
+//        Date expiredForgotPassword = DateUtils.addSeconds(new Date(), TIME_EXPIRED_TOKEN_RESET_PASSWORD);
+//        String linkResetPassword = email + tokenResetPassword;
+//        Integer updateToken = authenDao.updateTokenForgotPassword(email, encryptBcrypt(linkResetPassword), expiredForgotPassword);
+//
+//        if (updateToken == 1) {
+//            MessageSendPassword message = MessageSendPassword.builder()
+//                    .token(tokenResetPassword)
+//                    .address(email)
+//                    .lang(lang)
+//                    .build();
+//
+//            return true;
+//        }
+//        return false;
+//    }
     @Override
     public Boolean sendTokenResetPassword(String email, String lang) {
         User userByEmail = authenDao.checkUserByLoginId(email);
@@ -153,17 +195,20 @@ public class AuthenServiceImpl implements AuthenService {
             throw new InvalidParameterException("Email not exist");
         }
 
-        String tokenResetPassword = "111111";
+        // Tạo token ngẫu nhiên 6 chữ số
+        String tokenResetPassword = String.valueOf((int) (Math.random() * 900000) + 100000); // Ví dụ: "742391"
         Date expiredForgotPassword = DateUtils.addSeconds(new Date(), TIME_EXPIRED_TOKEN_RESET_PASSWORD);
         String linkResetPassword = email + tokenResetPassword;
         Integer updateToken = authenDao.updateTokenForgotPassword(email, encryptBcrypt(linkResetPassword), expiredForgotPassword);
 
         if (updateToken == 1) {
-            MessageSendPassword message = MessageSendPassword.builder()
-                    .token(tokenResetPassword)
-                    .address(email)
-                    .lang(lang)
-                    .build();
+            // Chuẩn bị và gửi email
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setTo(email);
+            mail.setFrom("MS_Mb33WO@test-xkjn41m2dv54z781.mlsender.net");
+            mail.setSubject("Reset Password Token");
+            mail.setText("Your reset token is: " + tokenResetPassword + "\nValid for " + (TIME_EXPIRED_TOKEN_RESET_PASSWORD / 60) + " minutes.");
+            javaMailSender.send(mail);
 
             return true;
         }
@@ -250,6 +295,30 @@ public class AuthenServiceImpl implements AuthenService {
             throw new NonHandleException("Token can not be null.");
         }
     }
+//
+//    private boolean validateTokenResetPassword(String email, Integer token) {
+//        if (email == null || token == null) {
+//            throw new InvalidParameterException("Email or token cannot be null");
+//        }
+//        User userByEmail = authenDao.checkUserByLoginId(email);
+//        if (userByEmail == null) {
+//            throw new InvalidParameterException("Email not exist");
+//        }
+//
+//        BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
+//        String link = email + token;
+//        Map<String, Object> map = authenDao.getTokenForgotPassword(email);
+//
+//        Date date = (Date) map.get("date_expired");
+//        String linkDb = (String) map.get("link");
+//
+//        boolean checkToken = bCrypt.matches(link, linkDb);
+//        int checkTimeExpired = (int) (date.getTime() - new Date().getTime()) / 1000;
+//        if (checkTimeExpired < 0) {
+//            throw new InvalidParameterException("Time not valid");
+//        }
+//        return checkTimeExpired <= TIME_EXPIRED_TOKEN_RESET_PASSWORD && checkToken;
+//    }
 
     private boolean validateTokenResetPassword(String email, Integer token) {
         if (email == null || token == null) {
@@ -264,7 +333,16 @@ public class AuthenServiceImpl implements AuthenService {
         String link = email + token;
         Map<String, Object> map = authenDao.getTokenForgotPassword(email);
 
-        Date date = (Date) map.get("date_expired");
+        // Parse String thành Date
+        String dateStr = (String) map.get("date_expired");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Định dạng phù hợp với chuỗi
+        Date date;
+        try {
+            date = sdf.parse(dateStr);
+        } catch (ParseException e) {
+            throw new InvalidParameterException("Invalid date format in database");
+        }
+
         String linkDb = (String) map.get("link");
 
         boolean checkToken = bCrypt.matches(link, linkDb);
