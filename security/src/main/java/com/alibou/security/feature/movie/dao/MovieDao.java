@@ -23,4 +23,6 @@ public interface MovieDao {
 
     List<Movie> getMovieByCategoryIdHot(String categoryId, Integer isHot, Integer page, Integer pageSize);
 
+    List<Movie> findMoviesByFilters(List<String> genres, List<String> actors, Integer yearFrom, Integer yearTo);
+
 }
