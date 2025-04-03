@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -224,31 +221,31 @@ public class CommentServiceImpl implements CommentService {
         return commentDao.save(comment);
     }
 
-    // Thêm Reaction cho comment
-    public Comment addReactionToComment(String commentId, String userId, String reactionType) {
-        Comment comment = commentDao.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
-        comment.getReactions().putIfAbsent(reactionType, new ArrayList<>());
-        List<String> users = comment.getReactions().get(reactionType);
-        if (!users.contains(userId)) {
-            users.add(userId);
-        }
-        return commentDao.save(comment);
-    }
-
-    // Bỏ Reaction cho comment
-    public Comment removeReactionFromComment(String commentId, String userId, String reactionType) {
-        Comment comment = commentDao.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
-        List<String> users = comment.getReactions().get(reactionType);
-        if (users != null) {
-            users.remove(userId);
-            if (users.isEmpty()) {
-                comment.getReactions().remove(reactionType);
-            }
-        }
-        return commentDao.save(comment);
-    }
+//    // Thêm Reaction cho comment
+//    public Comment addReactionToComment(String commentId, String userId, String reactionType) {
+//        Comment comment = commentDao.findById(commentId)
+//                .orElseThrow(() -> new RuntimeException("Comment not found"));
+//        comment.getReactions().putIfAbsent(reactionType, new ArrayList<>());
+//        List<String> users = comment.getReactions().get(reactionType);
+//        if (!users.contains(userId)) {
+//            users.add(userId);
+//        }
+//        return commentDao.save(comment);
+//    }
+//
+//    // Bỏ Reaction cho comment
+//    public Comment removeReactionFromComment(String commentId, String userId, String reactionType) {
+//        Comment comment = commentDao.findById(commentId)
+//                .orElseThrow(() -> new RuntimeException("Comment not found"));
+//        List<String> users = comment.getReactions().get(reactionType);
+//        if (users != null) {
+//            users.remove(userId);
+//            if (users.isEmpty()) {
+//                comment.getReactions().remove(reactionType);
+//            }
+//        }
+//        return commentDao.save(comment);
+//    }
 
     // Tương tự cho Reply
     public Comment likeReply(String commentId, String replyId, String userId) {
@@ -275,34 +272,120 @@ public class CommentServiceImpl implements CommentService {
         return commentDao.save(comment);
     }
 
-    public Comment addReactionToReply(String commentId, String replyId, String userId, String reactionType) {
+//    public Comment addReactionToReply(String commentId, String replyId, String userId, String reactionType) {
+//        Comment comment = commentDao.findById(commentId)
+//                .orElseThrow(() -> new RuntimeException("Comment not found"));
+//        CommentReply reply = comment.getReplies().stream()
+//                .filter(r -> r.getReplyId().equals(replyId))
+//                .findFirst()
+//                .orElseThrow(() -> new RuntimeException("Reply not found"));
+//        reply.getReactions().putIfAbsent(reactionType, new ArrayList<>());
+//        List<String> users = reply.getReactions().get(reactionType);
+//        if (!users.contains(userId)) {
+//            users.add(userId);
+//        }
+//        return commentDao.save(comment);
+//    }
+//
+//    public Comment removeReactionFromReply(String commentId, String replyId, String userId, String reactionType) {
+//        Comment comment = commentDao.findById(commentId)
+//                .orElseThrow(() -> new RuntimeException("Comment not found"));
+//        CommentReply reply = comment.getReplies().stream()
+//                .filter(r -> r.getReplyId().equals(replyId))
+//                .findFirst()
+//                .orElseThrow(() -> new RuntimeException("Reply not found"));
+//        List<String> users = reply.getReactions().get(reactionType);
+//        if (users != null) {
+//            users.remove(userId);
+//            if (users.isEmpty()) {
+//                reply.getReactions().remove(reactionType);
+//            }
+//        }
+//        return commentDao.save(comment);
+//    }
+
+    // Thêm Reaction cho comment
+    public Comment addReactionToComment(String commentId, String userId, String reactionType) {
         Comment comment = commentDao.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
-        CommentReply reply = comment.getReplies().stream()
-                .filter(r -> r.getReplyId().equals(replyId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Reply not found"));
-        reply.getReactions().putIfAbsent(reactionType, new ArrayList<>());
-        List<String> users = reply.getReactions().get(reactionType);
+
+        Map<String, List<String>> reactions = comment.getReactions() != null ? comment.getReactions() : new HashMap<>();
+
+        // Xóa tất cả cảm xúc cũ của userId
+        reactions.forEach((emoji, userIds) -> userIds.remove(userId));
+
+        // Thêm cảm xúc mới
+        reactions.putIfAbsent(reactionType, new ArrayList<>());
+        List<String> users = reactions.get(reactionType);
         if (!users.contains(userId)) {
             users.add(userId);
+        }
+
+        comment.setReactions(reactions);
+        return commentDao.save(comment);
+    }
+
+    // Bỏ Reaction cho comment
+    public Comment removeReactionFromComment(String commentId, String userId, String reactionType) {
+        Comment comment = commentDao.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        Map<String, List<String>> reactions = comment.getReactions();
+        if (reactions != null && reactions.containsKey(reactionType)) {
+            List<String> users = reactions.get(reactionType);
+            users.remove(userId);
+            if (users.isEmpty()) {
+                reactions.remove(reactionType);
+            }
+            comment.setReactions(reactions);
         }
         return commentDao.save(comment);
     }
 
-    public Comment removeReactionFromReply(String commentId, String replyId, String userId, String reactionType) {
+    // Thêm Reaction cho reply
+    public Comment addReactionToReply(String commentId, String replyId, String userId, String reactionType) {
         Comment comment = commentDao.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
+
         CommentReply reply = comment.getReplies().stream()
                 .filter(r -> r.getReplyId().equals(replyId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Reply not found"));
-        List<String> users = reply.getReactions().get(reactionType);
-        if (users != null) {
+
+        Map<String, List<String>> reactions = reply.getReactions() != null ? reply.getReactions() : new HashMap<>();
+
+        // Xóa tất cả cảm xúc cũ của userId
+        reactions.forEach((emoji, userIds) -> userIds.remove(userId));
+
+        // Thêm cảm xúc mới
+        reactions.putIfAbsent(reactionType, new ArrayList<>());
+        List<String> users = reactions.get(reactionType);
+        if (!users.contains(userId)) {
+            users.add(userId);
+        }
+
+        reply.setReactions(reactions);
+        return commentDao.save(comment);
+    }
+
+    // Bỏ Reaction cho reply
+    public Comment removeReactionFromReply(String commentId, String replyId, String userId, String reactionType) {
+        Comment comment = commentDao.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        CommentReply reply = comment.getReplies().stream()
+                .filter(r -> r.getReplyId().equals(replyId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Reply not found"));
+
+        Map<String, List<String>> reactions = reply.getReactions();
+        if (reactions != null && reactions.containsKey(reactionType)) {
+            List<String> users = reactions.get(reactionType);
             users.remove(userId);
             if (users.isEmpty()) {
-                reply.getReactions().remove(reactionType);
+                reactions.remove(reactionType);
             }
+            reply.setReactions(reactions);
         }
         return commentDao.save(comment);
     }
