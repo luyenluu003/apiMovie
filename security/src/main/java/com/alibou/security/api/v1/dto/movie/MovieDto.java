@@ -43,6 +43,7 @@ public class MovieDto implements Serializable {
     private String language;
     private Integer isHot;
     private Integer isVip;
+    private String thumbnail;
     private List<Episode> episodes;
     private List<Actor> actors;
 }

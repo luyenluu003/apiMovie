@@ -30,7 +30,7 @@ public class MovieDaoImpl implements MovieDao {
 
             String sql = String.format(
                     "SELECT category_id, censorship, description, duration, image_url, language, " +
-                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                             "FROM movie " +
                             "WHERE type = :type AND status = 1 " +
                             "LIMIT %d OFFSET %d", pageSize, offset // Truyền giá trị trực tiếp vào SQL
@@ -55,6 +55,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
 
         } catch (Exception e) {
@@ -67,7 +69,7 @@ public class MovieDaoImpl implements MovieDao {
     public Movie getMovieByMovieId(String movieId) {
         try {
             String sql = "SELECT category_id, censorship, description, duration, image_url, language, " +
-                    "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                    "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                     "FROM movie " +
                     "WHERE movie_code = :movieId AND status = 1 ";
 
@@ -91,6 +93,8 @@ public class MovieDaoImpl implements MovieDao {
                             .userphone(rs.getString("user_phone"))
                             .videoUrl(rs.getString("video_url"))
                             .isHot(rs.getInt("is_hot"))
+                            .isVip(rs.getInt("is_vip"))
+                            .thumbnail(rs.getString("thumbnail"))
                             .build()
             );
 
@@ -123,6 +127,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
         } catch (Exception e) {
             log.error("Error retrieving movies: {}", e.getMessage(), e);
@@ -137,7 +143,7 @@ public class MovieDaoImpl implements MovieDao {
 
             String sql = String.format(
                     "SELECT category_id, censorship, description, duration, image_url, language, " +
-                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                             "FROM movie " +
                             "WHERE is_hot = :isHot AND status = 1 " +
                             "LIMIT %d OFFSET %d", pageSize, offset // Truyền giá trị trực tiếp vào SQL
@@ -162,6 +168,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
 
         } catch (Exception e) {
@@ -174,7 +182,7 @@ public class MovieDaoImpl implements MovieDao {
     public Movie getMovieByMovieCode(String movieCode) {
         try {
             String sql = "SELECT category_id, censorship, description, duration, image_url, language, " +
-                    "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                    "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                     "FROM movie " +
                     "WHERE movie_code = :movieCode and status = 1 ";
 
@@ -198,6 +206,8 @@ public class MovieDaoImpl implements MovieDao {
                             .userphone(rs.getString("user_phone"))
                             .videoUrl(rs.getString("video_url"))
                             .isHot(rs.getInt("is_hot"))
+                            .isVip(rs.getInt("is_vip"))
+                            .thumbnail(rs.getString("thumbnail"))
                             .build()
             );
 
@@ -234,7 +244,7 @@ public class MovieDaoImpl implements MovieDao {
 
             String sql = String.format(
                     "SELECT category_id, censorship, description, duration, image_url, language, " +
-                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                             "FROM movie " +
                             "WHERE category_id = :categoryId AND status = 1 " +
                             "AND type =:type " +
@@ -261,6 +271,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
 
         } catch (Exception e) {
@@ -277,7 +289,7 @@ public class MovieDaoImpl implements MovieDao {
 
             String sql = String.format(
                     "SELECT category_id, censorship, description, duration, image_url, language, " +
-                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
                             "FROM movie " +
                             "WHERE category_id = :categoryId AND status = 1 " +
                             "AND is_hot =:isHot " +
@@ -304,6 +316,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
 
         } catch (Exception e) {
@@ -318,7 +332,7 @@ public class MovieDaoImpl implements MovieDao {
             // Xây dựng câu truy vấn SQL động
             StringBuilder sql = new StringBuilder(
                     "SELECT DISTINCT m.category_id, m.censorship, m.description, m.duration, m.image_url, m.language, " +
-                            "m.movie_code, m.movie_genre, m.movie_name, m.release_date, m.status, m.type, m.user_phone, m.video_url, m.is_hot " +
+                            "m.movie_code, m.movie_genre, m.movie_name, m.release_date, m.status, m.type, m.user_phone, m.video_url, m.is_hot, m.is_vip, m.thumbnail " +
                             "FROM movie m "
             );
 
@@ -388,6 +402,8 @@ public class MovieDaoImpl implements MovieDao {
                     .userphone(rs.getString("user_phone"))
                     .videoUrl(rs.getString("video_url"))
                     .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
                     .build());
 
         } catch (Exception e) {

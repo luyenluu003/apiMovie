@@ -67,7 +67,9 @@ public class MovieServiceImpl implements MovieService {
                     .type(movie.getType())
                     .userphone(movie.getUserphone())
                     .videoUrl(movie.getVideoUrl())
-                    .isHot(movie.getIsHot());
+                    .isHot(movie.getIsHot())
+                    .isVip(movie.getIsVip())
+                    .thumbnail(movie.getThumbnail());
 
             if (Boolean.TRUE.equals(movie.getType())) {
                 log.info("Fetching episodes for movieCode: {}", movie.getMovieCode());
@@ -109,7 +111,9 @@ public class MovieServiceImpl implements MovieService {
                     .type(movie.getType())
                     .userphone(movie.getUserphone())
                     .videoUrl(movie.getVideoUrl())
-                    .isHot(movie.getIsHot());
+                    .isHot(movie.getIsHot())
+                    .isVip(movie.getIsVip())
+                    .thumbnail(movie.getThumbnail());
 
             if (Boolean.TRUE.equals(movie.getType())) {
                 log.info("Fetching episodes for movieCode: {}", movie.getMovieCode());
@@ -198,6 +202,8 @@ public class MovieServiceImpl implements MovieService {
                         .userphone(movie.getUserphone())
                         .videoUrl(movie.getVideoUrl())
                         .isHot(movie.getIsHot())
+                        .isVip(movie.getIsVip())
+                        .thumbnail(movie.getThumbnail())
                         .build()
         ).collect(Collectors.toList());
     }
@@ -230,6 +236,8 @@ public class MovieServiceImpl implements MovieService {
                         .userphone(movie.getUserphone())
                         .videoUrl(movie.getVideoUrl())
                         .isHot(movie.getIsHot())
+                        .isVip(movie.getIsVip())
+                        .thumbnail(movie.getThumbnail())
                         .build()
         ).collect(Collectors.toList());
     }
