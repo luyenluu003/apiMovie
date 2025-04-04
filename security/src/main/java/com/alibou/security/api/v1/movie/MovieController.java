@@ -70,6 +70,31 @@ public class MovieController {
         return ResponseEntity.ok(movies);
     }
 
+    @GetMapping("/movievip")
+    @ResponseBody
+    public ResponseEntity<?> getMovieVip(
+            @RequestHeader("Accept-language") String lang,
+            @RequestParam("userId") String userId,
+            @RequestParam("isVip") Integer isVip,
+            @RequestParam("page") Integer page,
+            @RequestParam("pageSize") Integer pageSize,
+            HttpServletRequest request
+    ){
+        Long start = System.currentTimeMillis();
+        log.info("[MOVIE]:" + "userId=" + userId + " |isVip=" + isVip);
+
+        List<MovieDto> movies = movieService.findAllMoviesIsVip(page, pageSize, userId, isVip);
+
+        // Kiểm tra nếu không có dữ liệu
+        if (movies == null || movies.isEmpty()) {
+            log.info("[MOVIE]:" + "No movies found");
+            return ResponseEntity.noContent().build();
+        }
+        Long t = System.currentTimeMillis() - start;
+        log.info("[getVideoInfo]:userId=" + userId + "|END|Executime=" + t);
+        return ResponseEntity.ok(movies);
+    }
+
 
 
     @GetMapping("/detailMovie")
@@ -150,6 +175,32 @@ public class MovieController {
         log.info("[MOVIE]:" + "userId=" + userId + " |categoryId=" + categoryId);
 
         List<MovieDto> movies = movieService.findAllMovieByCategoryIdHot(userId, categoryId, isHot, page, pageSize);
+
+        // Kiểm tra nếu không có dữ liệu
+        if (movies == null || movies.isEmpty()) {
+            log.info("[MOVIE]:" + "No movies found");
+            return ResponseEntity.noContent().build();
+        }
+        Long t = System.currentTimeMillis() - start;
+        log.info("[getVideoInfo]:userId=" + userId + "|END|Executime=" + t);
+        return ResponseEntity.ok(movies);
+    }
+
+    @GetMapping("/movieVip/category")
+    @ResponseBody
+    public ResponseEntity<?> getMovieByCategoryVip(
+            @RequestHeader("Accept-language") String lang,
+            @RequestParam("userId") String userId,
+            @RequestParam("categoryId") String categoryId,
+            @RequestParam("isVip") Integer isVip,
+            @RequestParam("page") Integer page,
+            @RequestParam("pageSize") Integer pageSize,
+            HttpServletRequest request
+    ){
+        Long start = System.currentTimeMillis();
+        log.info("[MOVIE]:" + "userId=" + userId + " |categoryId=" + categoryId);
+
+        List<MovieDto> movies = movieService.findAllMovieByCategoryIdVip(userId, categoryId, isVip, page, pageSize);
 
         // Kiểm tra nếu không có dữ liệu
         if (movies == null || movies.isEmpty()) {

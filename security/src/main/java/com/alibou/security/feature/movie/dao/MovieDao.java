@@ -11,6 +11,8 @@ public interface MovieDao {
 
     List<Movie> getMovieHots(Integer isHot, Integer page, Integer pageSize);
 
+    List<Movie> getMovieVips(Integer isVip, Integer page, Integer pageSize);
+
     Movie getMovieByMovieCode(String movieCode);
 
     Movie getMovieByMovieId(String movieId);
@@ -22,6 +24,8 @@ public interface MovieDao {
     List<Movie> getMovieByCategoryId(String categoryId, Boolean type, Integer page, Integer pageSize);
 
     List<Movie> getMovieByCategoryIdHot(String categoryId, Integer isHot, Integer page, Integer pageSize);
+
+    List<Movie> getMovieByCategoryIdVip(String categoryId, Integer isVip, Integer page, Integer pageSize);
 
     List<Movie> findMoviesByFilters(List<String> genres, List<String> actors, Integer yearFrom, Integer yearTo);
 

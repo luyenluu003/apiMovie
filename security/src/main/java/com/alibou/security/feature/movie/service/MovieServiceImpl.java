@@ -126,6 +126,48 @@ public class MovieServiceImpl implements MovieService {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    @Cacheable(value = "movies", key = "'list-movies-vip:'.concat(#userId).concat(#isVip).concat(#page).concat(#pageSize)")
+    public List<MovieDto> findAllMoviesIsVip(Integer page, Integer pageSize, String userId, Integer isVip) {
+        log.info("FindAllMovieIsHot | HIT | userId={} | isHot={} | page={} | pageSize={}", userId, isVip, page, pageSize);
+
+        List<Movie> movies = movieDao.getMovieVips(isVip, page, pageSize);
+
+        if (movies == null || movies.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return movies.stream().map(movie -> {
+            MovieDto.MovieDtoBuilder builder = MovieDto.builder()
+                    .categoryId(movie.getCategoryId())
+                    .censorship(movie.getCensorship())
+                    .description(movie.getDescription())
+                    .duration(movie.getDuration())
+                    .imageUrl(movie.getImageUrl())
+                    .language(movie.getLanguage())
+                    .movieCode(movie.getMovieCode())
+                    .movieGenre(movie.getMovieGenre())
+                    .movieName(movie.getMovieName())
+                    .releaseDate(movie.getReleaseDate())
+                    .status(movie.getStatus())
+                    .type(movie.getType())
+                    .userphone(movie.getUserphone())
+                    .videoUrl(movie.getVideoUrl())
+                    .isHot(movie.getIsHot())
+                    .isVip(movie.getIsVip())
+                    .thumbnail(movie.getThumbnail());
+
+            if (Boolean.TRUE.equals(movie.getType())) {
+                log.info("Fetching episodes for movieCode: {}", movie.getMovieCode());
+                List<Episode> episodes = episodeDao.getAllEpisodesByMovieCode(movie.getMovieCode());
+                log.info("Episodes found: {}", episodes.size());
+                builder.episodes(episodes);
+            }
+
+            return builder.build();
+        }).collect(Collectors.toList());
+    }
+
 
 
     @Override
@@ -214,6 +256,40 @@ public class MovieServiceImpl implements MovieService {
         log.info("FindAllMovieIsHot | HIT | userId={} | categoryId={} | page={} | pageSize={}", userId, categoryId, page, pageSize);
 
         List<Movie> movies = movieDao.getMovieByCategoryIdHot(categoryId, isHot, page, pageSize);
+
+        if (movies == null || movies.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return movies.stream().map(movie ->
+                MovieDto.builder()
+                        .categoryId(movie.getCategoryId())
+                        .censorship(movie.getCensorship())
+                        .description(movie.getDescription())
+                        .duration(movie.getDuration())
+                        .imageUrl(movie.getImageUrl())
+                        .language(movie.getLanguage())
+                        .movieCode(movie.getMovieCode())
+                        .movieGenre(movie.getMovieGenre())
+                        .movieName(movie.getMovieName())
+                        .releaseDate(movie.getReleaseDate())
+                        .status(movie.getStatus())
+                        .type(movie.getType())
+                        .userphone(movie.getUserphone())
+                        .videoUrl(movie.getVideoUrl())
+                        .isHot(movie.getIsHot())
+                        .isVip(movie.getIsVip())
+                        .thumbnail(movie.getThumbnail())
+                        .build()
+        ).collect(Collectors.toList());
+    }
+
+    @Override
+    @Cacheable(value = "movies", key = "'list-movieVip-category:'.concat(#userId).concat(#categoryId).concat(#isVip).concat(#page).concat(#pageSize)")
+    public List<MovieDto> findAllMovieByCategoryIdVip(String userId, String categoryId, Integer isVip, Integer page, Integer pageSize)  {
+        log.info("FindAllMovieIsHot | HIT | userId={} | categoryId={} | page={} | pageSize={}", userId, categoryId, page, pageSize);
+
+        List<Movie> movies = movieDao.getMovieByCategoryIdVip(categoryId, isVip, page, pageSize);
 
         if (movies == null || movies.isEmpty()) {
             return Collections.emptyList();

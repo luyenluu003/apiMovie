@@ -178,6 +178,48 @@ public class MovieDaoImpl implements MovieDao {
         return Collections.emptyList();
     }
 
+    public List<Movie> getMovieVips(Integer isVip, Integer page, Integer pageSize) {
+        try {
+            int offset = Math.max((page - 1) * pageSize, 0);
+
+
+            String sql = String.format(
+                    "SELECT category_id, censorship, description, duration, image_url, language, " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
+                            "FROM movie " +
+                            "WHERE is_vip = :isVip AND status = 1 " +
+                            "LIMIT %d OFFSET %d", pageSize, offset // Truyền giá trị trực tiếp vào SQL
+            );
+
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("isVip", isVip);
+
+            return jdbcTemplate.query(sql, params, (rs, rowNum) -> Movie.builder()
+                    .categoryId(rs.getString("category_id"))
+                    .censorship(rs.getInt("censorship"))
+                    .description(rs.getString("description"))
+                    .duration(rs.getDouble("duration"))
+                    .imageUrl(rs.getString("image_url"))
+                    .language(rs.getString("language"))
+                    .movieCode(rs.getString("movie_code"))
+                    .movieGenre(rs.getString("movie_genre"))
+                    .movieName(rs.getString("movie_name"))
+                    .releaseDate(rs.getDate("release_date"))
+                    .status(rs.getBoolean("status"))
+                    .type(rs.getBoolean("type"))
+                    .userphone(rs.getString("user_phone"))
+                    .videoUrl(rs.getString("video_url"))
+                    .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Error retrieving movies: {}", e.getMessage(), e);
+        }
+        return Collections.emptyList();
+    }
+
     @Override
     public Movie getMovieByMovieCode(String movieCode) {
         try {
@@ -299,6 +341,51 @@ public class MovieDaoImpl implements MovieDao {
             SqlParameterSource params = new MapSqlParameterSource()
                     .addValue("categoryId", categoryId)
                     .addValue("isHot", isHot);
+
+            return jdbcTemplate.query(sql, params, (rs, rowNum) -> Movie.builder()
+                    .categoryId(rs.getString("category_id"))
+                    .censorship(rs.getInt("censorship"))
+                    .description(rs.getString("description"))
+                    .duration(rs.getDouble("duration"))
+                    .imageUrl(rs.getString("image_url"))
+                    .language(rs.getString("language"))
+                    .movieCode(rs.getString("movie_code"))
+                    .movieGenre(rs.getString("movie_genre"))
+                    .movieName(rs.getString("movie_name"))
+                    .releaseDate(rs.getDate("release_date"))
+                    .status(rs.getBoolean("status"))
+                    .type(rs.getBoolean("type"))
+                    .userphone(rs.getString("user_phone"))
+                    .videoUrl(rs.getString("video_url"))
+                    .isHot(rs.getInt("is_hot"))
+                    .isVip(rs.getInt("is_vip"))
+                    .thumbnail(rs.getString("thumbnail"))
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Error retrieving movies: {}", e.getMessage(), e);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Movie> getMovieByCategoryIdVip(String categoryId, Integer isVip, Integer page, Integer pageSize) {
+        try {
+            int offset = Math.max((page - 1) * pageSize, 0);
+
+
+            String sql = String.format(
+                    "SELECT category_id, censorship, description, duration, image_url, language, " +
+                            "movie_code, movie_genre, movie_name, release_date, status, type, user_phone, video_url, is_hot, is_vip, thumbnail " +
+                            "FROM movie " +
+                            "WHERE category_id = :categoryId AND status = 1 " +
+                            "AND is_vip =:isVip " +
+                            "LIMIT %d OFFSET %d", pageSize, offset // Truyền giá trị trực tiếp vào SQL
+            );
+
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("categoryId", categoryId)
+                    .addValue("isVip", isVip);
 
             return jdbcTemplate.query(sql, params, (rs, rowNum) -> Movie.builder()
                     .categoryId(rs.getString("category_id"))
