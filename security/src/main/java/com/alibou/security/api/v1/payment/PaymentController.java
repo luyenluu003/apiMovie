@@ -1,6 +1,7 @@
 package com.alibou.security.api.v1.payment;
 
 import com.alibou.security.api.v1.dto.SuccessResDto;
+import com.alibou.security.api.v1.dto.movie.MovieDto;
 import com.alibou.security.feature.transaction.dao.TransactionDao;
 import com.alibou.security.feature.transaction.model.MovieTransaction;
 import com.alibou.security.feature.transaction.service.PayPalService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @Log4j2
@@ -189,5 +191,29 @@ public class PaymentController {
             e.printStackTrace();
             return "Thanh toán thất bại: " + e.getMessage();
         }
+    }
+
+    @GetMapping("/allTransition/user")
+    @ResponseBody
+    public ResponseEntity<?> getMovieByCategoryVip(
+            @RequestHeader("Accept-language") String lang,
+            @RequestParam("userId") String userId,
+            @RequestParam("page") Integer page,
+            @RequestParam("pageSize") Integer pageSize,
+            HttpServletRequest request
+    ){
+        Long start = System.currentTimeMillis();
+        log.info("[TRANSACTION]:" + "userId=" + userId);
+
+        List<MovieTransaction> movieTransactions = transactionDao.getAllTransactionByUserId(userId, page, pageSize);
+
+        // Kiểm tra nếu không có dữ liệu
+        if (movieTransactions == null || movieTransactions.isEmpty()) {
+            log.info("[TRANSACTION]:" + "No TRANSACTION found");
+            return ResponseEntity.noContent().build();
+        }
+        Long t = System.currentTimeMillis() - start;
+        log.info("[TRANSACTION]:userId=" + userId + "|END|Executime=" + t);
+        return ResponseEntity.ok(movieTransactions);
     }
 }

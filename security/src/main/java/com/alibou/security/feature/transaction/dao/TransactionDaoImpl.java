@@ -1,5 +1,6 @@
 package com.alibou.security.feature.transaction.dao;
 
+import com.alibou.security.feature.movie.model.Movie;
 import com.alibou.security.feature.transaction.model.MovieTransaction;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collections;
+import java.util.List;
 
 @Log4j2
 @Repository
@@ -99,5 +103,39 @@ public class TransactionDaoImpl implements TransactionDao{
             log.error("Error retrieving Transaction: {}", e.getMessage(), e);
         }
         return null;
+    }
+
+    @Override
+    public List<MovieTransaction> getAllTransactionByUserId(String userId, Integer page, Integer pageSize) {
+        try {
+            int offset = Math.max((page - 1) * pageSize, 0);
+
+
+            String sql = String.format(
+                    "SELECT * " +
+                            "FROM movie_transaction " +
+                            "WHERE user_id = :userId " +
+                            "ORDER BY transaction_date DESC " +
+                            "LIMIT %d OFFSET %d", pageSize, offset // Truyền giá trị trực tiếp vào SQL
+            );
+
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("userId", userId);
+
+            return jdbcTemplate.query(sql, params, (rs, rowNum) -> MovieTransaction.builder()
+                    .amount(rs.getDouble("amount"))
+                    .currency(rs.getString("currency"))
+                    .packageId(rs.getString("package_id"))
+                    .paymentId(rs.getString("payment_id"))
+                    .paymentMethod(rs.getString("payment_method"))
+                    .status(rs.getString("status"))
+                    .transactionDate(rs.getDate("transaction_date"))
+                    .userId(rs.getString("user_id"))
+                    .build());
+
+        } catch (Exception e) {
+            log.error("Error retrieving transaction: {}", e.getMessage(), e);
+        }
+        return Collections.emptyList();
     }
 }
