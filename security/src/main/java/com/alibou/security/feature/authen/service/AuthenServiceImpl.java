@@ -436,10 +436,10 @@ public class AuthenServiceImpl implements AuthenService {
             user.setUserName(userName);
         }
         if (phoneNumber != null) {
-            // Kiểm tra định dạng số điện thoại nếu không rỗng
-            if (!phoneNumber.isEmpty() && !ReengUtils.isPhoneNumber(phoneNumber)) {
-                throw new InvalidParameterException("phoneNumber " + phoneNumber + " wrong format <CountryCode><Phone>");
-            }
+//            // Kiểm tra định dạng số điện thoại nếu không rỗng
+//            if (!phoneNumber.isEmpty() && !ReengUtils.isPhoneNumber(phoneNumber)) {
+//                throw new InvalidParameterException("phoneNumber " + phoneNumber + " wrong format <CountryCode><Phone>");
+//            }
             user.setPhoneNumber(phoneNumber);
         }
         if (avatar != null && !avatar.isEmpty()) {

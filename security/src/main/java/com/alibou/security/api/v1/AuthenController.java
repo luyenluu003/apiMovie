@@ -99,9 +99,9 @@ public class AuthenController {
             @RequestParam("password") @NotBlank @Size(min = 8, message = "Password > 8 digit") String password
     ){
         log.info("Request registration phoneNumber={}, email={}", phoneNumber, email);
-        if(!ReengUtils.isPhoneNumber(phoneNumber)) {
-            throw new InvalidParameterException("phoneNumber " + phoneNumber + " wrong format <CountryCode><Phone> ");
-        }
+//        if(!ReengUtils.isPhoneNumber(phoneNumber)) {
+//            throw new InvalidParameterException("phoneNumber " + phoneNumber + " wrong format <CountryCode><Phone> ");
+//        }
         User user = new User();
         user.setUserName(username);
         user.setPhoneNumber(phoneNumber);
@@ -206,10 +206,10 @@ public class AuthenController {
                 updateUserRequest.getAvatar());
 
         // Kiểm tra định dạng phoneNumber nếu được gửi
-        if (updateUserRequest.getPhoneNumber() != null && !updateUserRequest.getPhoneNumber().isEmpty()
-                && !ReengUtils.isPhoneNumber(updateUserRequest.getPhoneNumber())) {
-            throw new InvalidParameterException("phoneNumber " + updateUserRequest.getPhoneNumber() + " wrong format <CountryCode><Phone>");
-        }
+//        if (updateUserRequest.getPhoneNumber() != null && !updateUserRequest.getPhoneNumber().isEmpty()
+//                && !ReengUtils.isPhoneNumber(updateUserRequest.getPhoneNumber())) {
+//            throw new InvalidParameterException("phoneNumber " + updateUserRequest.getPhoneNumber() + " wrong format <CountryCode><Phone>");
+//        }
 
         // Gọi service để cập nhật thông tin
         User updatedUser = authenService.updateUser(
